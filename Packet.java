@@ -86,10 +86,24 @@ public class Packet {
 	
 	/**
 	 * Returns an instance of Packet
+	 * 
+	 * @param timeArrive
+	 * 	The unit of time this packet was created.
+	 * @param minSize
+	 * 	The minimum size of the packet.
+	 * @param maxSize
+	 * 	The maximum size of the packet.
 	 */
-	public Packet(int minSize, int maxSize) {
+	public Packet(int timeArrive, int minSize, int maxSize) {
 		this.id = packetCount;
 		packetCount += 1;
 		this.packetSize = (int) (Math.random()*(maxSize - minSize) + minSize);
+		this.timeArrive = timeArrive;
+		this.timeToDest = packetSize/100;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("[%s, %d, %d]", id, timeArrive, timeToDest);
 	}
 }

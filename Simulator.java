@@ -9,6 +9,7 @@ package networksimulator;
  **/
 public class Simulator {
 	public static void main (String[] args) {
-
+		Packet packet = new Packet(20, 2000, 5000);
+		System.out.println(packet.toString());
 	}
 }
