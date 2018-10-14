@@ -95,8 +95,8 @@ public class Packet {
 	 * 	The maximum size of the packet.
 	 */
 	public Packet(int timeArrive, int minSize, int maxSize) {
-		this.id = packetCount;
 		packetCount += 1;
+		this.id = packetCount;
 		this.packetSize = (int) (Math.random()*(maxSize - minSize) + minSize);
 		this.timeArrive = timeArrive;
 		this.timeToDest = packetSize/100;

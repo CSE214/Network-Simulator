@@ -2,6 +2,7 @@ package networksimulator;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 /**
  * The <code>Router</code> class represents a router in the network.
@@ -12,32 +13,50 @@ import java.util.LinkedList;
 public class Router extends LinkedList<Packet> {
 	private static final long serialVersionUID = -1728475378998247541L;
 	private static int bufferSize = 10;
+	private String packetStringList = "";
 	
 	public static void setBufferSize(int newBufferSize) {
 		bufferSize = newBufferSize;
 	}
 
 	/**
-	 * Adds a new packet to the end of the router buffer.
+	 * Adds a new packet to the end of the router buffer. Updates
+	 * the packetStringList accordingly.
+	 * 
 	 * @param packet
+	 * 	Packet to add
 	 */
 	public void enqueue(Packet packet) {
+		if (packetStringList == "") {
+			packetStringList += packet.toString();
+		} else {
+			packetStringList += ", " + packet.toString();
+		}
 		addLast(packet);
 	}
 	
 	/**
-	 * Removes and returns the first Packet in the router buffer.
+	 * Removes and returns the first Packet in the router buffer. Updates the packet
+	 * string list accordingly.
+	 * 
 	 * @return
+	 * 	The removed packet.
 	 */
 	public Packet dequeue() {
-		return pollFirst();
+		Packet packet = pollFirst();
+		if (size() == 0) {
+			packetStringList = "";
+		} else {
+			packetStringList = packetStringList.replace(packet.toString() + ", ", "");
+		}
+		return packet;
 	}
 	
 	/**
 	 * Returns a string representation of the router buffer.
 	 */
 	public String toString() {
-		return "";
+		return "{" + packetStringList + "}";
 	}
 	
 	/**
