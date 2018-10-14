@@ -11,6 +11,11 @@ import java.util.LinkedList;
  **/
 public class Router extends LinkedList<Packet> {
 	private static final long serialVersionUID = -1728475378998247541L;
+	private static int bufferSize = 10;
+	
+	public static void setBufferSize(int newBufferSize) {
+		bufferSize = newBufferSize;
+	}
 
 	/**
 	 * Adds a new packet to the end of the router buffer.
@@ -35,10 +40,22 @@ public class Router extends LinkedList<Packet> {
 		return "";
 	}
 	
+	/**
+	 * Loops through an array of routers, and returns the index
+	 * of the router with the most available space.
+	 * 
+	 * @param routers
+	 * 	The array of routers to loop through
+	 * 
+	 * @return
+	 * 	The router with the most available space.
+	 */
 	public static int sendPacketTo(Router[] routers) {
-		int bestRouterIndex = 0;
+		int bestRouterIndex = -1;
 		for (int i = 1; i < routers.length; i++) {
-			if (routers[i].size() < routers[bestRouterIndex].size()) {
+			if (routers[i].size() < bufferSize && bestRouterIndex != -1) {
+				bestRouterIndex = i;
+			} else if (routers[i].size() < routers[bestRouterIndex].size()) {
 				bestRouterIndex = i;
 			}
 		}
