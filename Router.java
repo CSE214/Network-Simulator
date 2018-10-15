@@ -1,8 +1,6 @@
 package networksimulator;
 
-import java.util.Collection;
 import java.util.LinkedList;
-import java.util.ListIterator;
 
 /**
  * The <code>Router</code> class represents a router in the network.
@@ -12,11 +10,11 @@ import java.util.ListIterator;
  **/
 public class Router extends LinkedList<Packet> {
 	private static final long serialVersionUID = -1728475378998247541L;
-	private static int bufferSize = 10;
+	private int bufferSize = 10;
 	private String packetStringList = "";
 	
-	public static void setBufferSize(int newBufferSize) {
-		bufferSize = newBufferSize;
+	public void setBufferSize(int newBufferSize) {
+		this.bufferSize = newBufferSize;
 	}
 
 	/**
@@ -69,7 +67,7 @@ public class Router extends LinkedList<Packet> {
 	 * @return
 	 * 	The router with the most available space.
 	 */
-	public static int sendPacketTo(Router[] routers) {
+	public int sendPacketTo(Router[] routers) {
 		int bestRouterIndex = -1;
 		for (int i = 1; i < routers.length; i++) {
 			if (routers[i].size() < bufferSize && bestRouterIndex != -1) {
