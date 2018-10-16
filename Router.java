@@ -1,6 +1,7 @@
 package networksimulator;
 
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 /**
  * The <code>Router</code> class represents a router in the network.
@@ -25,11 +26,6 @@ public class Router extends LinkedList<Packet> {
 	 * 	Packet to add
 	 */
 	public void enqueue(Packet packet) {
-		if (packetStringList == "") {
-			packetStringList += packet.toString();
-		} else {
-			packetStringList += ", " + packet.toString();
-		}
 		addLast(packet);
 	}
 	
@@ -41,20 +37,37 @@ public class Router extends LinkedList<Packet> {
 	 * 	The removed packet.
 	 */
 	public Packet dequeue() {
-		Packet packet = pollFirst();
-		if (size() == 0) {
-			packetStringList = "";
-		} else {
-			packetStringList = packetStringList.replace(packet.toString() + ", ", "");
+		return pollFirst();
+	}
+	
+	/**
+	 * Decrements the arrival time of each packet in this router
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>
+	 * Each packet inside this router has its time to arrival
+	 * decreased by 1.
+	 * </dd>
+	 * </dl>
+	 */
+	public void decrementArrivalTime() {
+		ListIterator<Packet> list = listIterator(0);
+		while (list.hasNext()) {
+			list.next().countDown();
 		}
-		return packet;
 	}
 	
 	/**
 	 * Returns a string representation of the router buffer.
 	 */
 	public String toString() {
-		return "{" + packetStringList + "}";
+		String[] packetStringList = new String[size()];
+		ListIterator<Packet> list = listIterator(0);
+		for (int i = 0; i < size(); i++) {
+			packetStringList[i] = list.next().toString();
+		}
+		return "{" + String.join(", ", packetStringList) + "}";
 	}
 	
 	/**

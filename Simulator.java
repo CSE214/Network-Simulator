@@ -1,6 +1,5 @@
 package networksimulator;
 
-
 /**
  * The <code>Simulator</code> class allows the user to run the simulation.
  * 
@@ -88,6 +87,25 @@ public class Simulator {
 	}
 	
 	/**
+	 * Decrements the time to arrival for all packets in the
+	 * intermediate routers.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>
+	 * Each packet inside an intermediate router has its time to arrival
+	 * decreased by 1.
+	 * </dd>
+	 * </dl>
+	 * 
+	 */
+	public static void decrementArrivalTimes() {
+		for (int i = 1; i < routers.length; i++) {
+			routers[i].decrementArrivalTime();
+		}
+	}
+	
+	/**
 	 * Responsible for generating new packets at the start of the time unit.
 	 * 
 	 * <dl>
@@ -163,6 +181,7 @@ public class Simulator {
 	public static void simulateTimeUnit() {
 		currentTime += 1;
 		System.out.println("\nTime: " + currentTime);
+		decrementArrivalTimes();
 		tryNewPackets();
 		sendPacketsToRouters();
 		printRouterStatus();
