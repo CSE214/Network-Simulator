@@ -85,6 +85,20 @@ public class Packet {
 	}
 	
 	/**
+	 * Decrements the time to destination.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>
+	 * The time to destination decreases by 1.
+	 * </dd>
+	 * </dl>
+	 */
+	public void countDown() {
+		this.timeToDest -= 1;
+	}
+	
+	/**
 	 * Returns an instance of Packet
 	 * 
 	 * @param timeArrive

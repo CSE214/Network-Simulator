@@ -64,10 +64,10 @@ public class Simulator {
 	 * </dl>	 
 	 */
 	private static void setupRouters() {
+		Router.setBufferSize(maxBufferSize);
 		routers = new Router[numIntRouters + 1];
 		for (int i = 1; i < routers.length; i++) {
 			routers[i] = new Router();
-			routers[i].setBufferSize(maxBufferSize);
 		}
 	}
 	
@@ -97,11 +97,39 @@ public class Simulator {
 	 */
 	public static void tryNewPackets() {
 		double diceRoll;
+		int countArrived = 0;
 		for (int i = 0; i < 3; i++) {
 			diceRoll = Math.random();
 			if (diceRoll < arrivalProb) {
+				countArrived += 1;
 				newPacket();
 			}
+		}
+		if (countArrived == 0) {
+			System.out.println("No packets have arrived.");
+		}
+	}
+	
+	/**
+	 * Responsible for sending new packets to the appropriate intermediate router.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>
+	 * Packets have been sent to an appropriate router, if available. If no routers
+	 * are available, the packets will be dropped.
+	 * </dd>
+	 * </dl>
+	 */
+	public static void sendPacketsToRouters() {
+		while (dispatcher.size() != 0) {
+			Packet nextPacket = dispatcher.dequeue();
+			try {
+				int bestRouterIndex = Router.sendPacketTo(routers);
+				routers[bestRouterIndex].enqueue(nextPacket);
+			} catch (FullRouterException e) {
+				System.out.println("Network is congested. Packet " + nextPacket.getId() + " is dropped.");
+			}	
 		}
 	}
 	
@@ -134,10 +162,29 @@ public class Simulator {
 	 */
 	public static void simulateTimeUnit() {
 		currentTime += 1;
-		System.out.println("\n Time: " + currentTime);
-		setupRouters();
+		System.out.println("\nTime: " + currentTime);
 		tryNewPackets();
+		sendPacketsToRouters();
 		printRouterStatus();
+	}
+	
+	/**
+	 * Runs the simulation.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>
+	 * The simulation has started.
+	 * </dd>
+	 * </dl>
+	 */
+	public static double simulate () {
+		getUserInput();
+		setupRouters();
+		while (currentTime != duration) {
+			simulateTimeUnit();
+		}
+		return 0.3;
 	}
 	
 	/**
@@ -147,6 +194,6 @@ public class Simulator {
 	 */
 	public static void main (String[] args) {
 		getUserInput();
-		simulateTimeUnit();
+		simulate();
 	}
 }

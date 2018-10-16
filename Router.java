@@ -10,11 +10,11 @@ import java.util.LinkedList;
  **/
 public class Router extends LinkedList<Packet> {
 	private static final long serialVersionUID = -1728475378998247541L;
-	private int bufferSize = 10;
+	private static int bufferSize = 10;
 	private String packetStringList = "";
 	
-	public void setBufferSize(int newBufferSize) {
-		this.bufferSize = newBufferSize;
+	public static void setBufferSize(int newBufferSize) {
+		bufferSize = newBufferSize;
 	}
 
 	/**
@@ -66,15 +66,22 @@ public class Router extends LinkedList<Packet> {
 	 * 
 	 * @return
 	 * 	The router with the most available space.
+	 * 
+	 * @throws FullRouterException 
+	 * 	If all the routers are full
 	 */
-	public int sendPacketTo(Router[] routers) {
+	public static int sendPacketTo(Router[] routers) throws FullRouterException {
 		int bestRouterIndex = -1;
 		for (int i = 1; i < routers.length; i++) {
-			if (routers[i].size() < bufferSize && bestRouterIndex != -1) {
+			if (routers[i].size() < bufferSize && bestRouterIndex == -1) {
 				bestRouterIndex = i;
-			} else if (routers[i].size() < routers[bestRouterIndex].size()) {
+			} else if (bestRouterIndex != -1 && //Using short-circuit evaluation
+					   routers[i].size() < routers[bestRouterIndex].size()) {
 				bestRouterIndex = i;
 			}
+		}
+		if (bestRouterIndex == -1) {
+			throw new FullRouterException("All routers are currently full");
 		}
 		return bestRouterIndex;
 	}
