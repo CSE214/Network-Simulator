@@ -11,7 +11,7 @@ import java.util.Scanner;
  *         Brook ID: 110261379
  **/
 public class Simulator {
-	private static Router dispatcher = new Router(); // Level 1 router
+	private static Router dispatcher; // Level 1 router
 	private static Router[] routers; // Level 2 routers
 	private static int totalServiceTime; // Total time each packet is in the network
 	private static int totalPacketsArrived; // Count of packets that have reached destination
@@ -25,22 +25,19 @@ public class Simulator {
 	private static int duration; // Number of units of time to simulate
 	private static int currentTime; // Current time of simulation
 	private static Scanner in = new Scanner(System.in);
-	
+
 	/**
 	 * Creates a random number in the given interval
 	 * 
-	 * @param minVal
-	 * 	The lowest possible value.
-	 * @param maxVal
-	 * 	The highest possible value
+	 * @param minVal The lowest possible value.
+	 * @param maxVal The highest possible value
 	 * 
-	 * @return
-	 * 	A random number in the defined interval.
+	 * @return A random number in the defined interval.
 	 */
 	private int randInt(int minVal, int maxVal) {
-		return (int) (Math.random()*(maxVal-minVal) + minVal);
+		return (int) (Math.random() * (maxVal - minVal) + minVal);
 	}
-	
+
 	/**
 	 * Receives necessary input from the user.
 	 * 
@@ -50,6 +47,8 @@ public class Simulator {
 	 * </dl>
 	 */
 	private static void getUserInput() {
+		System.out.print("\nEnter the number of Intermediate routers: ");
+		numIntRouters = Integer.parseInt(in.nextLine());
 		arrivalProb = 0.5;
 		numIntRouters = 4;
 		maxBufferSize = 10;
@@ -58,14 +57,14 @@ public class Simulator {
 		bandwidth = 2;
 		duration = 25;
 	}
-	
+
 	/**
 	 * Sets up the routers according to user specification.
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
 	 * <dd>A router array with the specified parameters has been initialized.</dd>
-	 * </dl>	 
+	 * </dl>
 	 */
 	private static void setupRouters() {
 		Router.setBufferSize(maxBufferSize);
@@ -74,7 +73,7 @@ public class Simulator {
 			routers[i] = new Router();
 		}
 	}
-	
+
 	/**
 	 * Create a new packet in the simulation.
 	 * 
@@ -86,21 +85,18 @@ public class Simulator {
 	public static void newPacket() {
 		Packet newPacket = new Packet(currentTime, minPacketSize, maxPacketSize);
 		dispatcher.enqueue(newPacket);
-		System.out.println(String.format(
-				"Packet %d arrives at dispatcher with size %d.", 
-				newPacket.getId(), newPacket.getPacketSize()));
+		System.out.println(String.format("Packet %d arrives at dispatcher with size %d.", newPacket.getId(),
+				newPacket.getPacketSize()));
 	}
-	
+
 	/**
-	 * Decrements the time to arrival for the first packets in any
-	 * intermediate non-empty routers.
+	 * Decrements the time to arrival for the first packets in any intermediate
+	 * non-empty routers.
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
-	 * <dd>
-	 * The first packet inside an intermediate non-empty router has its time 
-	 * to arrival decreased by 1.
-	 * </dd>
+	 * <dd>The first packet inside an intermediate non-empty router has its time to
+	 * arrival decreased by 1.</dd>
 	 * </dl>
 	 * 
 	 */
@@ -111,7 +107,7 @@ public class Simulator {
 			}
 		}
 	}
-	
+
 	/**
 	 * Responsible for generating new packets at the start of the time unit.
 	 * 
@@ -134,16 +130,14 @@ public class Simulator {
 			System.out.println("No packets have arrived.");
 		}
 	}
-	
+
 	/**
 	 * Responsible for sending new packets to the appropriate intermediate router.
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
-	 * <dd>
-	 * Packets have been sent to an appropriate router, if available. If no routers
-	 * are available, the packets will be dropped.
-	 * </dd>
+	 * <dd>Packets have been sent to an appropriate router, if available. If no
+	 * routers are available, the packets will be dropped.</dd>
 	 * </dl>
 	 */
 	public static void sendPacketsToRouters() {
@@ -155,17 +149,16 @@ public class Simulator {
 			} catch (FullRouterException e) {
 				packetsDropped += 1;
 				System.out.println("Network is congested. Packet " + nextPacket.getId() + " is dropped.");
-			}	
+			}
 		}
 	}
-	
+
 	/**
 	 * Pops any packets that are ready to leave their intermediate router.
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
-	 * <dd>
-	 * Any packet with timeToDest = 0 are popped from their intermediate router.
+	 * <dd>Any packet with timeToDest = 0 are popped from their intermediate router.
 	 * </dd>
 	 * </dl>
 	 */
@@ -175,12 +168,12 @@ public class Simulator {
 				Packet packet = routers[i].pollFirst();
 				totalServiceTime += packet.getTimeInNetwork();
 				totalPacketsArrived += 1;
-				System.out.println("Packet " + packet.getId() + 
-						" has successfully reached its destination: +" + packet.getTimeInNetwork());
+				System.out.println("Packet " + packet.getId() + " has successfully reached its destination: +"
+						+ packet.getTimeInNetwork());
 			}
 		}
 	}
-	
+
 	/**
 	 * Prints the status of the routers to the user.
 	 * 
@@ -194,18 +187,15 @@ public class Simulator {
 			System.out.println("R" + i + ": " + routers[i].toString());
 		}
 	}
-	
+
 	/**
 	 * Simulates one unit of time in the simulation.
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
-	 * <dd>
-	 * New packets attempt to generate. If any are generated, they are
-	 * sent to the appropriate router, if possible. Any packets that can 
-	 * move to their destination
-	 * have attempted to do so.
-	 * </dd>
+	 * <dd>New packets attempt to generate. If any are generated, they are sent to
+	 * the appropriate router, if possible. Any packets that can move to their
+	 * destination have attempted to do so.</dd>
 	 * </dl>
 	 */
 	public static void simulateTimeUnit() {
@@ -217,15 +207,31 @@ public class Simulator {
 		popArrivedPackets();
 		printRouterStatus();
 	}
-	
+
+	/**
+	 * Initializes the simulation's routers and running counts.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>The appropriate variables have been initialized to their defaults.</dd>
+	 * </dl>
+	 */
+	public static void init() {
+		dispatcher = new Router();
+		routers = null;
+		totalServiceTime = 0;
+		totalPacketsArrived = 0;
+		packetsDropped = 0;
+		currentTime = 0;
+		System.out.println("\nStarting simulation...");
+	}
+
 	/**
 	 * Runs the simulation.
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
-	 * <dd>
-	 * The simulation has started.
-	 * </dd>
+	 * <dd>The simulation has started.</dd>
 	 * </dl>
 	 */
 	public static double simulate() {
@@ -234,40 +240,52 @@ public class Simulator {
 		while (currentTime != duration) {
 			simulateTimeUnit();
 		}
-		return (double) totalServiceTime/totalPacketsArrived;
+		return (double) totalServiceTime / totalPacketsArrived;
 	}
-	
+
 	/**
 	 * Prints the results of the simulation to the user.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>The results have been printed to the user.</dd>
+	 * </dl>
 	 */
 	public static void printResults() {
-		
-	}
-	
-	/**
-	 * Runs the simulation using user-defined parameters. After the
-	 * simulation is done, the user will be asked if they want
-	 * to run another simulation.
-	 */
-	public static void main (String[] args) {
 		DecimalFormat df = new DecimalFormat("#.##");
 		df.setRoundingMode(RoundingMode.CEILING);
-		System.out.println("\nStarting simulator...");
-		getUserInput();
-		String averageServiceTime = df.format(simulate());
+
 		System.out.println("\nSimulation ending...");
 		System.out.println("Total Service Time: " + totalServiceTime);
 		System.out.println("Total Packets Served: " + totalPacketsArrived);
-		System.out.println("Average service time per packet: " + averageServiceTime);
+		System.out.println(
+				"Average service time per packet: " + df.format((double) totalServiceTime / totalPacketsArrived));
 		System.out.println("Total packets dropped: " + packetsDropped);
-		System.out.println("Do you want to try another simulation? (y/n) : ");
+	}
+
+	/**
+	 * Runs the simulation using user-defined parameters. After the simulation is
+	 * done, the user will be asked if they want to run another simulation.
+	 */
+	public static void main(String[] args) {
+		init();
+		getUserInput();
+		simulate();
+		printResults();
+
+		System.out.print("\nDo you want to try another simulation? (y/n) : ");
 		String input = in.nextLine();
-		while (!input.equals("y") || !input.equals("n")) {
-			System.out.println("Please enter \"y\" or \"n\": ");
+		while (!input.equals("y") && !input.equals("n")) {
+			System.out.println(input);
+			System.out.println(input.equals("y"));
+			System.out.print("Please enter \"y\" or \"n\": ");
 			input = in.nextLine();
 		}
 		if (input.equals("y")) {
 			main(args);
+		} else if (input.equals("n")) {
+			System.out.println("\nProgram terminating successfully...");
+			System.exit(0);
 		}
 	}
 }
