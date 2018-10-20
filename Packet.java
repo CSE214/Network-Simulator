@@ -13,6 +13,7 @@ public class Packet {
 	private int packetSize; // Size of packet
 	private int timeArrive; // Time of creation
 	private int timeToDest; // Time to destination
+	private int timeInNetwork; // Time spent in network
 	/**
 	 * @return 
 	 *	The packetCount
@@ -83,6 +84,20 @@ public class Packet {
 	public void setTimeToDest(int timeToDest) {
 		this.timeToDest = timeToDest;
 	}
+	/**
+	 * @return 
+	 *	The timeInNetwork of this instance
+	 */
+	public int getTimeInNetwork() {
+		return timeInNetwork;
+	}
+	/**
+	 * @param timeInNetwork 
+	 * 	The new timeInNetwork to set
+	 */
+	public void incrementTimeInNetwork(int timeInNetwork) {
+		this.timeInNetwork = timeInNetwork;
+	}
 	
 	/**
 	 * Decrements the time to destination.
@@ -96,6 +111,7 @@ public class Packet {
 	 */
 	public void countDown() {
 		this.timeToDest -= 1;
+		this.timeInNetwork += 1;
 	}
 	
 	/**
@@ -114,6 +130,7 @@ public class Packet {
 		this.packetSize = (int) (Math.random()*(maxSize - minSize) + minSize);
 		this.timeArrive = timeArrive;
 		this.timeToDest = packetSize/100;
+		this.timeInNetwork = 0;
 	}
 	
 	@Override

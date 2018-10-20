@@ -52,10 +52,7 @@ public class Router extends LinkedList<Packet> {
 	 * </dl>
 	 */
 	public void decrementArrivalTime() {
-		ListIterator<Packet> list = listIterator(0);
-		while (list.hasNext()) {
-			list.next().countDown();
-		}
+		getFirst().countDown();
 	}
 	
 	/**

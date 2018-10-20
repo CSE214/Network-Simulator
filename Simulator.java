@@ -1,5 +1,9 @@
 package networksimulator;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.Scanner;
+
 /**
  * The <code>Simulator</code> class allows the user to run the simulation.
  * 
@@ -14,12 +18,13 @@ public class Simulator {
 	private static int packetsDropped; // The number of dropped packets
 	private static double arrivalProb; // Probability of new packet arrival
 	private static int numIntRouters; // Number of intermediate routers
-	private static int maxBufferSize = 10; // Buffer size of router
-	private static int minPacketSize = 0; // Minimum possible packet size
-	private static int maxPacketSize = 10; // Maximum possible packet size
+	private static int maxBufferSize; // Buffer size of router
+	private static int minPacketSize; // Minimum possible packet size
+	private static int maxPacketSize; // Maximum possible packet size
 	private static int bandwidth; // Number of packets destination router can accept at one time
 	private static int duration; // Number of units of time to simulate
-	private static int currentTime = 0; // Current time of simulation
+	private static int currentTime; // Current time of simulation
+	private static Scanner in = new Scanner(System.in);
 	
 	/**
 	 * Creates a random number in the given interval
@@ -87,21 +92,23 @@ public class Simulator {
 	}
 	
 	/**
-	 * Decrements the time to arrival for all packets in the
-	 * intermediate routers.
+	 * Decrements the time to arrival for the first packets in any
+	 * intermediate non-empty routers.
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
 	 * <dd>
-	 * Each packet inside an intermediate router has its time to arrival
-	 * decreased by 1.
+	 * The first packet inside an intermediate non-empty router has its time 
+	 * to arrival decreased by 1.
 	 * </dd>
 	 * </dl>
 	 * 
 	 */
 	public static void decrementArrivalTimes() {
 		for (int i = 1; i < routers.length; i++) {
-			routers[i].decrementArrivalTime();
+			if (routers[i].size() > 0) {
+				routers[i].decrementArrivalTime();
+			}
 		}
 	}
 	
@@ -146,8 +153,31 @@ public class Simulator {
 				int bestRouterIndex = Router.sendPacketTo(routers);
 				routers[bestRouterIndex].enqueue(nextPacket);
 			} catch (FullRouterException e) {
+				packetsDropped += 1;
 				System.out.println("Network is congested. Packet " + nextPacket.getId() + " is dropped.");
 			}	
+		}
+	}
+	
+	/**
+	 * Pops any packets that are ready to leave their intermediate router.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>
+	 * Any packet with timeToDest = 0 are popped from their intermediate router.
+	 * </dd>
+	 * </dl>
+	 */
+	public static void popArrivedPackets() {
+		for (int i = 1; i < routers.length; i++) {
+			if (routers[i].size() != 0 && routers[i].getFirst().getTimeToDest() == 0) {
+				Packet packet = routers[i].pollFirst();
+				totalServiceTime += packet.getTimeInNetwork();
+				totalPacketsArrived += 1;
+				System.out.println("Packet " + packet.getId() + 
+						" has successfully reached its destination: +" + packet.getTimeInNetwork());
+			}
 		}
 	}
 	
@@ -184,6 +214,7 @@ public class Simulator {
 		decrementArrivalTimes();
 		tryNewPackets();
 		sendPacketsToRouters();
+		popArrivedPackets();
 		printRouterStatus();
 	}
 	
@@ -197,13 +228,20 @@ public class Simulator {
 	 * </dd>
 	 * </dl>
 	 */
-	public static double simulate () {
+	public static double simulate() {
 		getUserInput();
 		setupRouters();
 		while (currentTime != duration) {
 			simulateTimeUnit();
 		}
-		return 0.3;
+		return (double) totalServiceTime/totalPacketsArrived;
+	}
+	
+	/**
+	 * Prints the results of the simulation to the user.
+	 */
+	public static void printResults() {
+		
 	}
 	
 	/**
@@ -212,7 +250,24 @@ public class Simulator {
 	 * to run another simulation.
 	 */
 	public static void main (String[] args) {
+		DecimalFormat df = new DecimalFormat("#.##");
+		df.setRoundingMode(RoundingMode.CEILING);
+		System.out.println("\nStarting simulator...");
 		getUserInput();
-		simulate();
+		String averageServiceTime = df.format(simulate());
+		System.out.println("\nSimulation ending...");
+		System.out.println("Total Service Time: " + totalServiceTime);
+		System.out.println("Total Packets Served: " + totalPacketsArrived);
+		System.out.println("Average service time per packet: " + averageServiceTime);
+		System.out.println("Total packets dropped: " + packetsDropped);
+		System.out.println("Do you want to try another simulation? (y/n) : ");
+		String input = in.nextLine();
+		while (!input.equals("y") || !input.equals("n")) {
+			System.out.println("Please enter \"y\" or \"n\": ");
+			input = in.nextLine();
+		}
+		if (input.equals("y")) {
+			main(args);
+		}
 	}
 }
