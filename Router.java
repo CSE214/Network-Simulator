@@ -13,51 +13,64 @@ public class Router extends LinkedList<Packet> {
 	private static final long serialVersionUID = -1728475378998247541L;
 	private static int bufferSize = 10;
 	private String packetStringList = "";
-	
+
 	public static void setBufferSize(int newBufferSize) {
 		bufferSize = newBufferSize;
 	}
 
 	/**
-	 * Adds a new packet to the end of the router buffer. Updates
-	 * the packetStringList accordingly.
+	 * Adds a new packet to the end of the router buffer. Updates the
+	 * packetStringList accordingly.
 	 * 
-	 * @param packet
-	 * 	Packet to add
+	 * @param packet Packet to add
 	 */
 	public void enqueue(Packet packet) {
 		addLast(packet);
 	}
-	
+
 	/**
 	 * Removes and returns the first Packet in the router buffer. Updates the packet
 	 * string list accordingly.
 	 * 
-	 * @return
-	 * 	The removed packet.
+	 * @return The removed packet.
 	 */
 	public Packet dequeue() {
 		return pollFirst();
 	}
-	
+
 	/**
 	 * Decrements the arrival time of each packet in this router
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
-	 * <dd>
-	 * Each packet inside this router has its time to arrival
-	 * decreased by 1.
-	 * </dd>
+	 * <dd>The first packet inside this router has its time to arrival decreased by
+	 * 1.</dd>
 	 * </dl>
 	 */
 	public void decrementArrivalTime() {
 		getFirst().countDown();
 	}
-	
+
+	/**
+	 * Increments the time in network for each packet in this router.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>Each packet inside this router has its time in network increased by 1.
+	 * </dd>
+	 * </dl>
+	 */
+	public void incrementTimeInNetwork() {
+		ListIterator<Packet> list = listIterator(0);
+		while (list.hasNext()) {
+			list.next().incrementTimeInNetwork();
+		}
+	}
+
 	/**
 	 * Returns a string representation of the router buffer.
 	 */
+	@Override
 	public String toString() {
 		String[] packetStringList = new String[size()];
 		ListIterator<Packet> list = listIterator(0);
@@ -66,27 +79,24 @@ public class Router extends LinkedList<Packet> {
 		}
 		return "{" + String.join(", ", packetStringList) + "}";
 	}
-	
+
 	/**
-	 * Loops through an array of routers, and returns the index
-	 * of the router with the most available space.
+	 * Loops through an array of routers, and returns the index of the router with
+	 * the most available space.
 	 * 
-	 * @param routers
-	 * 	The array of routers to loop through
+	 * @param routers The array of routers to loop through
 	 * 
-	 * @return
-	 * 	The router with the most available space.
+	 * @return The router with the most available space.
 	 * 
-	 * @throws FullRouterException 
-	 * 	If all the routers are full
+	 * @throws FullRouterException If all the routers are full
 	 */
 	public static int sendPacketTo(Router[] routers) throws FullRouterException {
 		int bestRouterIndex = -1;
 		for (int i = 1; i < routers.length; i++) {
 			if (routers[i].size() < bufferSize && bestRouterIndex == -1) {
 				bestRouterIndex = i;
-			} else if (bestRouterIndex != -1 && //Using short-circuit evaluation
-					   routers[i].size() < routers[bestRouterIndex].size()) {
+			} else if (bestRouterIndex != -1 && // Using short-circuit evaluation
+					routers[i].size() < routers[bestRouterIndex].size()) {
 				bestRouterIndex = i;
 			}
 		}

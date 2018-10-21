@@ -2,7 +2,7 @@ package networksimulator;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.Scanner;
+import java.util.LinkedList;
 
 /**
  * The <code>Simulator</code> class allows the user to run the simulation.
@@ -24,7 +24,8 @@ public class Simulator {
 	private static int bandwidth; // Number of packets destination router can accept at one time
 	private static int duration; // Number of units of time to simulate
 	private static int currentTime; // Current time of simulation
-	private static Scanner in = new Scanner(System.in);
+	private static LinkedList<Router> routerQueue;
+	private static InputHandler in = new InputHandler();
 
 	/**
 	 * Creates a random number in the given interval
@@ -48,14 +49,19 @@ public class Simulator {
 	 */
 	private static void getUserInput() {
 		System.out.print("\nEnter the number of Intermediate routers: ");
-		numIntRouters = Integer.parseInt(in.nextLine());
-		arrivalProb = 0.5;
-		numIntRouters = 4;
-		maxBufferSize = 10;
-		minPacketSize = 500;
-		maxPacketSize = 1500;
-		bandwidth = 2;
-		duration = 25;
+		numIntRouters = in.nextPositiveInt();
+		System.out.print("\nEnter the arrival probability of a packet: ");
+		arrivalProb = in.nextPositiveDouble();
+		System.out.print("\nEnter the maximum buffer size of a router: ");
+		maxBufferSize = in.nextPositiveInt();
+		System.out.print("\nEnter the minimum size of a packet: ");
+		minPacketSize = in.nextPositiveInt();
+		System.out.print("\nEnter the maximum size of a packet: ");
+		maxPacketSize = in.nextPositiveInt();
+		System.out.print("\nEnter the bandwidth size: ");
+		bandwidth = in.nextPositiveInt();
+		System.out.print("\nEnter the simulation duration: ");
+		duration = in.nextPositiveInt();
 	}
 
 	/**
@@ -109,6 +115,23 @@ public class Simulator {
 	}
 
 	/**
+	 * Increments the time in network for every packet in every router.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>Every router has their packets timeInNetwork incremented by 1.</dd>
+	 * </dl>
+	 * 
+	 */
+	public static void incrementTimeInNetwork() {
+		for (int i = 1; i < routers.length; i++) {
+			if (routers[i].size() > 0) {
+				routers[i].incrementTimeInNetwork();
+			}
+		}
+	}
+
+	/**
 	 * Responsible for generating new packets at the start of the time unit.
 	 * 
 	 * <dl>
@@ -154,7 +177,26 @@ public class Simulator {
 	}
 
 	/**
+	 * Keeps track of intermediate routers that are ready to send their packets.
+	 * 
+	 * <dl>
+	 * <dt>Postconditions:</dt>
+	 * <dd>Any routers with their first packet having timeToDest=0 are pushed to the
+	 * queue.</dd>
+	 * </dl>
+	 */
+	public static void pushToRouterQueue() {
+		for (int i = 1; i < routers.length; i++) {
+			if (routers[i].size() != 0 && routers[i].getFirst().getTimeToDest() == 0
+					&& routerQueue.indexOf(routers[i]) == -1) {
+				routerQueue.addLast(routers[i]);
+			}
+		}
+	}
+
+	/**
 	 * Pops any packets that are ready to leave their intermediate router.
+	 * Implements fairness using a queue.
 	 * 
 	 * <dl>
 	 * <dt>Postconditions:</dt>
@@ -163,13 +205,14 @@ public class Simulator {
 	 * </dl>
 	 */
 	public static void popArrivedPackets() {
-		for (int i = 1; i < routers.length; i++) {
-			if (routers[i].size() != 0 && routers[i].getFirst().getTimeToDest() == 0) {
-				Packet packet = routers[i].pollFirst();
-				totalServiceTime += packet.getTimeInNetwork();
+		for (int i = 0; i < bandwidth; i++) {
+			if (!routerQueue.isEmpty()) {
+				Router nextRouter = routerQueue.pollFirst();
+				Packet nextPacket = nextRouter.dequeue();
+				totalServiceTime += nextPacket.getTimeInNetwork();
 				totalPacketsArrived += 1;
-				System.out.println("Packet " + packet.getId() + " has successfully reached its destination: +"
-						+ packet.getTimeInNetwork());
+				System.out.println("Packet " + nextPacket.getId() + " has successfully reached its destination: +"
+						+ nextPacket.getTimeInNetwork());
 			}
 		}
 	}
@@ -202,8 +245,10 @@ public class Simulator {
 		currentTime += 1;
 		System.out.println("\nTime: " + currentTime);
 		decrementArrivalTimes();
+		incrementTimeInNetwork();
 		tryNewPackets();
 		sendPacketsToRouters();
+		pushToRouterQueue();
 		popArrivedPackets();
 		printRouterStatus();
 	}
@@ -223,6 +268,7 @@ public class Simulator {
 		totalPacketsArrived = 0;
 		packetsDropped = 0;
 		currentTime = 0;
+		routerQueue = new LinkedList<Router>();
 		System.out.println("\nStarting simulation...");
 	}
 
@@ -235,6 +281,7 @@ public class Simulator {
 	 * </dl>
 	 */
 	public static double simulate() {
+		init();
 		getUserInput();
 		setupRouters();
 		while (currentTime != duration) {
@@ -268,16 +315,12 @@ public class Simulator {
 	 * done, the user will be asked if they want to run another simulation.
 	 */
 	public static void main(String[] args) {
-		init();
-		getUserInput();
 		simulate();
 		printResults();
 
 		System.out.print("\nDo you want to try another simulation? (y/n) : ");
 		String input = in.nextLine();
 		while (!input.equals("y") && !input.equals("n")) {
-			System.out.println(input);
-			System.out.println(input.equals("y"));
 			System.out.print("Please enter \"y\" or \"n\": ");
 			input = in.nextLine();
 		}
