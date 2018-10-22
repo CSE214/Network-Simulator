@@ -244,10 +244,10 @@ public class Simulator {
 	public static void simulateTimeUnit() {
 		currentTime += 1;
 		System.out.println("\nTime: " + currentTime);
-		decrementArrivalTimes();
 		incrementTimeInNetwork();
 		tryNewPackets();
 		sendPacketsToRouters();
+		decrementArrivalTimes();
 		pushToRouterQueue();
 		popArrivedPackets();
 		printRouterStatus();

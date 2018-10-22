@@ -108,7 +108,7 @@ public class Packet {
 	 * </dl>
 	 */
 	public void countDown() {
-		if (timeToDest > 0)
+		if (timeToDest > 0 && timeInNetwork > 0)
 			this.timeToDest -= 1;
 	}
 
@@ -142,6 +142,6 @@ public class Packet {
 
 	@Override
 	public String toString() {
-		return String.format("[%s, %d, %d, %d]", id, timeArrive, timeToDest, timeInNetwork);
+		return String.format("[%s, %d, %d]", id, timeArrive, timeToDest);
 	}
 }
